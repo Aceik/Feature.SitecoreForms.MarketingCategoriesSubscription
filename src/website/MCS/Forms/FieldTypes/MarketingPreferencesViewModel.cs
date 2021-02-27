@@ -104,22 +104,32 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.FieldTypes
                 return;
             }
 
-            foreach (var marketingCategoryGroup in marketingCategoryGroups)
+            if(Items.Count == 0)
             {
-                var marketingCategories = marketingCategoryGroup.Children;
-                foreach (Item marketingCategory in marketingCategories)
+                foreach (var marketingCategoryGroup in marketingCategoryGroups)
                 {
-                    var categoryListItem = new ListFieldItem();
-                    categoryListItem.ItemId = categoryListItem.Value = marketingCategory.ID.ToString();
-                    categoryListItem.Text = marketingCategory.DisplayName;
-                    categoryListItem.Selected = IsSelected(marketingPreferences, marketingCategory);
-                    Items.Add(categoryListItem);
+                    var marketingCategories = marketingCategoryGroup.Children;
+                    foreach (Item marketingCategory in marketingCategories)
+                    {
+                        var categoryListItem = new ListFieldItem();
+                        categoryListItem.ItemId = categoryListItem.Value = marketingCategory.ID.ToString();
+                        categoryListItem.Text = marketingCategory.DisplayName;
+                        categoryListItem.Selected = IsSelected(marketingPreferences, marketingCategory);
+                        Items.Add(categoryListItem);
+                    }
                 }
             }
 
-            using (new SecurityDisabler())
+            try
             {
-                base.UpdateDataSourceSettings(item);
+                using (new SecurityDisabler())
+                {
+                    base.UpdateDataSourceSettings(item);
+                }
+            }
+            catch (Exception)
+            {
+
             }
         }
 

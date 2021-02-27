@@ -122,5 +122,22 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.CM.Messaging
 
             return wasSuccessful;
         }
+
+
+        public bool QuickSubscribe(Guid recipientListId, Contact contact)
+        {
+            var contactList = _listManagerWrapper.FindById(recipientListId);
+            if (contactList == null)
+            {
+                return false;
+            }
+
+            var wasSuccessful = true;
+
+            wasSuccessful = _listManagerWrapper.SubscribeContact(recipientListId, contact);
+
+
+            return wasSuccessful;
+        }
     }
 }

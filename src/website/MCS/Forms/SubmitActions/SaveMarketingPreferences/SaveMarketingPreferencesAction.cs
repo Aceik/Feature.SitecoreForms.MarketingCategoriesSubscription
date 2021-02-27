@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Feature.SitecoreForms.MarketingCategoriesSubscription.CM.Messaging;
 using Feature.SitecoreForms.MarketingCategoriesSubscription.Constants;
 using Feature.SitecoreForms.MarketingCategoriesSubscription.Contract.Services;
 using Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActions.SaveMarketingPreferences.Base;
@@ -33,7 +34,8 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActi
             ServiceLocator.ServiceProvider.GetService<IXConnectContactFactory>(),
             ServiceLocator.ServiceProvider.GetService<ISaveMarketingPreferencesService<SaveMarketingPreferencesData>>(),
             ServiceLocator.ServiceProvider.GetService<IMarketingPreferencesService>(),
-            ServiceLocator.ServiceProvider.GetService<IExmSubscriptionClientApiService>())
+            ServiceLocator.ServiceProvider.GetService<IExmSubscriptionClientApiService>(),
+            ServiceLocator.ServiceProvider.GetService<ISubscribeContactService>())
         {
         }
 
@@ -44,8 +46,9 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActi
             IXConnectContactFactory xConnectContactFactory,
             ISaveMarketingPreferencesService<SaveMarketingPreferencesData> saveMarketingPreferencesService,
             IMarketingPreferencesService marketingPreferencesService,
-            IExmSubscriptionClientApiService exmSubscriptionClientApiService)
-            : base(submitActionData, logger, xConnectContactService, xConnectContactFactory, saveMarketingPreferencesService, marketingPreferencesService, exmSubscriptionClientApiService)
+            IExmSubscriptionClientApiService exmSubscriptionClientApiService,
+            ISubscribeContactService subscriptions)
+            : base(submitActionData, logger, xConnectContactService, xConnectContactFactory, saveMarketingPreferencesService, marketingPreferencesService, exmSubscriptionClientApiService, subscriptions)
         {
             Condition.Requires(xConnectContactService, nameof(xConnectContactService)).IsNotNull();
             _xConnectContactService = xConnectContactService;
@@ -55,7 +58,7 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActi
         {
             var fieldList = fields.ToList();
 
-            var emailAddressField = (StringInputViewModel)fieldList.FirstOrDefault(x => x.ItemId == data.FieldEmailAddressId.ToString());
+            var emailAddressField = (StringInputViewModel)fieldList.FirstOrDefault(x => x.ItemId.ToLower() == data.FieldEmailAddressId.ToString().ToLower());
             if (emailAddressField != null && !string.IsNullOrEmpty(emailAddressField.Value))
             {
                 return new ContactIdentifier(ContactIdentifiers.Email, emailAddressField.Value, ContactIdentifierType.Known);

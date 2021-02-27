@@ -145,7 +145,7 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActi
         private static string GetFieldById(Guid? guid, IEnumerable<IViewModel> fields)
         {
             var fieldList = fields.ToList();
-            var field = (StringInputViewModel)fieldList.FirstOrDefault(x => x.ItemId == guid.ToString());
+            var field = (StringInputViewModel)fieldList.FirstOrDefault(x => x.ItemId.ToLower() == guid.ToString().ToLower());
             return field != null ? field.Value : string.Empty;
         }
 

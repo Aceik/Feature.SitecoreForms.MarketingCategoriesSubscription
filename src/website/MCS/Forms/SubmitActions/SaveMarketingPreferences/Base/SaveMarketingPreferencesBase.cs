@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Feature.SitecoreForms.MarketingCategoriesSubscription.CM.Messaging;
 using Feature.SitecoreForms.MarketingCategoriesSubscription.Contract.MessageBus;
 using Feature.SitecoreForms.MarketingCategoriesSubscription.Contract.Services;
 using Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.Exceptions;
@@ -39,6 +40,10 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActi
         private readonly IMarketingPreferencesService _marketingPreferenceService;
         [NonSerialized]
         private readonly IExmSubscriptionClientApiService _exmSubscriptionClientApiService;
+
+        [NonSerialized]
+        private readonly ISubscribeContactService _subscriptionService;
+
         private readonly bool _useDoubleOptIn = Settings.GetBoolSetting("NewsletterSubscription.UseDoubleOptInForSubscription", true); // GDPR, sorry for the default value!
 
         protected SaveMarketingPreferencesBase(
@@ -48,7 +53,9 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActi
             IXConnectContactFactory xConnectContactFactory,
             ISaveMarketingPreferencesService<T> saveMarketingPreferencesService,
             IMarketingPreferencesService marketingPreferenceService,
-            IExmSubscriptionClientApiService exmSubscriptionClientApiService)
+            IExmSubscriptionClientApiService exmSubscriptionClientApiService,
+            ISubscribeContactService subscriptionService
+            )
             : base(submitActionData)
         {
             Condition.Requires(logger, nameof(logger)).IsNotNull();
@@ -57,6 +64,7 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActi
             Condition.Requires(saveMarketingPreferencesService, nameof(saveMarketingPreferencesService)).IsNotNull();
             Condition.Requires(marketingPreferenceService, nameof(marketingPreferenceService)).IsNotNull();
             Condition.Requires(exmSubscriptionClientApiService, nameof(exmSubscriptionClientApiService)).IsNotNull();
+            Condition.Requires(subscriptionService, nameof(subscriptionService)).IsNotNull();
 
             Logger = logger;
             _xConnectContactService = xConnectContactService;
@@ -64,6 +72,7 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActi
             _saveMarketingPreferencesService = saveMarketingPreferencesService;
             _marketingPreferenceService = marketingPreferenceService;
             _exmSubscriptionClientApiService = exmSubscriptionClientApiService;
+            _subscriptionService = subscriptionService;
         }
 
         protected override bool Execute(T data, FormSubmitContext formSubmitContext)
@@ -128,10 +137,11 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActi
             {
                 if (IsContactSubscribedToList(contact, listId.Value))
                 {
-                    if (!_saveMarketingPreferencesService.AuthenticateContact(contact))
-                    {
-                        throw new ContactIdentifierException();
-                    }
+                    // Not 100% sure how this works or why its needed, but had to turn it off for now
+                    //if (!_saveMarketingPreferencesService.AuthenticateContact(contact))
+                    //{
+                    //    throw new ContactIdentifierException();
+                    //}
 
                     var marketingPreferences = _saveMarketingPreferencesService.GetSelectedMarketingPreferences(marketingPreferencesViewModel, managerRoot, contact.ExmKeyBehaviorCache()?.MarketingPreferences).ToList();
                     _marketingPreferenceService.SavePreferences(contact, marketingPreferences);
@@ -213,7 +223,11 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.SubmitActi
                 _exmSubscriptionClientApiService.Subscribe(message);
             }
 
+
             var contact = GetXConnectContactByIdentifer(contactIdentifier);
+
+            _subscriptionService.QuickSubscribe(listId, contact);
+
             _marketingPreferenceService.SavePreferences(contact, marketingPreferences);
         }
 

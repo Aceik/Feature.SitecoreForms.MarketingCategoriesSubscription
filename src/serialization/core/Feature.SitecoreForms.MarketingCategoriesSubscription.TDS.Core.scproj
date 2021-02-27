@@ -17,7 +17,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>.\bin\Debug\</OutputPath>
+    <OutputPath>.\bin\Release\</OutputPath>
     <RecursiveDeployAction>Ignore</RecursiveDeployAction>
     <EnableValidations>False</EnableValidations>
     <ValidationSettingsFilePath>.\Feature.SitecoreForms.MarketingCategoriesSubscription.TDS.Core_Debug.xml</ValidationSettingsFilePath>

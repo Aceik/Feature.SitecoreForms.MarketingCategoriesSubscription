@@ -9,5 +9,7 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.CM.Messaging
     {
         bool HandleContactSubscription(Guid messageRecipientListId, ContactIdentifier messageContactIdentifier, Guid messageManagerRootId, Language messageContextLanguage, bool messageSendSubscriptionConfirmation);
         bool HandleContactUnsubscriptionFromAll(ContactIdentifier contact, ManagerRoot managerRoot);
+
+        bool QuickSubscribe(Guid recipientListId, Contact contact);
     }
 }
