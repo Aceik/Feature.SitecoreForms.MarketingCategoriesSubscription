@@ -115,21 +115,30 @@ namespace Feature.SitecoreForms.MarketingCategoriesSubscription.Forms.FieldTypes
                         categoryListItem.ItemId = categoryListItem.Value = marketingCategory.ID.ToString();
                         categoryListItem.Text = marketingCategory.DisplayName;
                         categoryListItem.Selected = IsSelected(marketingPreferences, marketingCategory);
-                        Items.Add(categoryListItem);
+                        if(!Items.Any(x => x.ItemId == categoryListItem.ItemId))
+                            Items.Add(categoryListItem);
                     }
                 }
             }
 
-            try
+            using (new SecurityDisabler())
             {
-                using (new SecurityDisabler())
+                bool rewriteItems = true;
+                if(item.HasChildren && item.Children.Any(x => x.Name == "Settings"))
                 {
-                    base.UpdateDataSourceSettings(item);
+                    var settingsChild = item.Children.First(x => x.Name == "Settings");
+                    if (settingsChild.HasChildren && settingsChild.Children.Any(x => x.Name == "Datasource"))
+                    {
+                        var datasourceChild = settingsChild.Children.First(x => x.Name == "Datasource");
+                        if(datasourceChild.HasChildren && datasourceChild.Children.Count == Items.Count)
+                        {
+                            rewriteItems = false;
+                        }
+                    }
                 }
-            }
-            catch (Exception)
-            {
 
+                if(rewriteItems)
+                    base.UpdateDataSourceSettings(item);
             }
         }
 
